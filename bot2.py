@@ -3,15 +3,15 @@ from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# Database setup
+
 DB_NAME = 'bot.db'
-CHAT_ID = '-1002660444971'  # Replace with your actual group chat ID, e.g., -1001234567890
+CHAT_ID = '-************' 
 
 def create_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    # Fields table
+  
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Fields (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +21,7 @@ def create_db():
     )
     ''')
 
-    # Courses table
+
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Courses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +31,6 @@ def create_db():
     )
     ''')
 
-    # Universities table
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Universities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +40,7 @@ def create_db():
     )
     ''')
 
-    # Files table with foreign keys to Courses and Universities
+   
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Files (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +56,7 @@ def create_db():
     )
     ''')
 
-    # Logs table
+    
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +66,7 @@ def create_db():
     )
     ''')
 
-    # Junction table for Fields and Courses (many-to-many)
+  
     cur.execute('''
     CREATE TABLE IF NOT EXISTS FieldCourses (
         field_id INTEGER,
@@ -78,7 +77,7 @@ def create_db():
     )
     ''')
 
-    # Junction table for Universities and Courses (many-to-many)
+    
     cur.execute('''
     CREATE TABLE IF NOT EXISTS UniversityCourses (
         university_id INTEGER,
@@ -92,7 +91,7 @@ def create_db():
     conn.commit()
     conn.close()
 
-# Telegram bot functions
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -139,7 +138,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith('course_'):
         parts = data.split('_')
         course_id = int(parts[1])
-        # field_id = int(parts[2])  # Not needed further, but preserved in callback for reference if needed
+       
 
         cur.execute('''
             SELECT u.id, u.Name 
@@ -178,7 +177,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             conn.close()
             return
 
-        # Forward files and update download counts
+        
         for filename, desc in files:
             message_id = int(filename)
             await context.bot.forward_message(
@@ -186,7 +185,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 from_chat_id=CHAT_ID,
                 message_id=message_id
             )
-            # Increment download count for all matching rows
+            
             cur.execute('''
                 UPDATE Files 
                 SET DownloadCount = DownloadCount + 1 
@@ -194,7 +193,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ''', (filename, course_id, uni_id))
             conn.commit()
 
-        # Log the user interaction
+  
         user = update.effective_user
         username = user.username or "Unknown"
         user_id = str(user.id)
@@ -216,7 +215,7 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Please reply to a message to get its ID.")
 
-# Main bot setup
+
 if __name__ == '__main__':
     create_db()
     TOKEN = '7519604639:AAE0FzLZXrIIMK153Ao79sWbuYbr4HO8SMQ'  # Replace with your actual bot token
