@@ -4,7 +4,7 @@ from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# Database setup
+
 DB_NAME = 'bot.db'
 FILES_FOLDER = 'StoredFiles'
 
@@ -12,7 +12,7 @@ def create_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
-    # Fields table
+ 
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Fields (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +22,7 @@ def create_db():
     )
     ''')
 
-    # Courses table
+ 
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Courses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +32,7 @@ def create_db():
     )
     ''')
 
-    # Universities table
+ 
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Universities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +42,7 @@ def create_db():
     )
     ''')
 
-    # Files table with foreign keys to Courses and Universities
+    
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Files (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +58,7 @@ def create_db():
     )
     ''')
 
-    # Logs table
+ 
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +68,7 @@ def create_db():
     )
     ''')
 
-    # Junction table for Fields and Courses (many-to-many)
+   
     cur.execute('''
     CREATE TABLE IF NOT EXISTS FieldCourses (
         field_id INTEGER,
@@ -79,7 +79,7 @@ def create_db():
     )
     ''')
 
-    # Junction table for Universities and Courses (many-to-many)
+    
     cur.execute('''
     CREATE TABLE IF NOT EXISTS UniversityCourses (
         university_id INTEGER,
@@ -93,11 +93,11 @@ def create_db():
     conn.commit()
     conn.close()
 
-# Create StoredFiles folder if it doesn't exist
+
 if not os.path.exists(FILES_FOLDER):
     os.makedirs(FILES_FOLDER)
 
-# Telegram bot functions
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -144,7 +144,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith('course_'):
         parts = data.split('_')
         course_id = int(parts[1])
-        # field_id = int(parts[2])  # Not needed further, but preserved in callback for reference if needed
+       
 
         cur.execute('''
             SELECT u.id, u.Name 
@@ -182,19 +182,19 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             conn.close()
             return
 
-        # Send files and update download counts
+        
         for file_id, name, filename, desc, download_count in files:
             file_path = os.path.join(FILES_FOLDER, filename)
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as f:
                     await query.message.reply_document(document=f, filename=filename, caption=desc)
-                # Increment download count
+                
                 cur.execute('UPDATE Files SET DownloadCount = DownloadCount + 1 WHERE id = ?', (file_id,))
                 conn.commit()
             else:
                 await query.message.reply_text(f"File '{filename}' not found in storage.")
 
-        # Log the user interaction
+    
         user = update.effective_user
         username = user.username or "Unknown"
         user_id = str(user.id)
@@ -205,11 +205,12 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     conn.close()
 
-# Main bot setup
+
 if __name__ == '__main__':
     create_db()
-    TOKEN = '7519604639:AAE0FzLZXrIIMK153Ao79sWbuYbr4HO8SMQ'  # Replace with your actual bot token
+    TOKEN = '****************'  
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CallbackQueryHandler(button))
     application.run_polling()
+    
