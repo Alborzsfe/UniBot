@@ -2,15 +2,14 @@ import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, filters
 
-# Enable logging
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# Replace with your bot's token
-TOKEN = '7315845497:AAG-LoBEIycyDPNCIbtZmoah6JdchdtqZ_8'
+# Replace with bot's token
+TOKEN = 'TOKEN'
 
-# These will be filled in later during setup
-GROUP_CHAT_ID = -1002660444971  # e.g., -1001234567890
-FILE_MESSAGE_IDS = [39, 47]  # e.g., [1234, 5678] – list of message IDs to forward
+GROUP_CHAT_ID = -'.......'  
+FILE_MESSAGE_IDS = [39, 47]  
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message.chat.type == 'private':
@@ -43,9 +42,9 @@ async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 def main() -> None:
     application = Application.builder().token(TOKEN).build()
 
-    # Handle /start only in private chats
+    
     application.add_handler(CommandHandler('start', start, filters.ChatType.PRIVATE))
-    # Handle /getchatid and /getid in any chat
+    
     application.add_handler(CommandHandler('getchatid', getchatid))
     application.add_handler(CommandHandler('getid', getid))
 
