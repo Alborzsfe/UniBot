@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -5,8 +6,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 
 
 DB_NAME = 'bot.db'
-CHAT_ID = '-************' 
-
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 def create_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -218,7 +218,11 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == '__main__':
     create_db()
-    TOKEN = '7519604639:AAE0FzLZXrIIMK153Ao79sWbuYbr4HO8SMQ'  # Replace with your actual bot token
+    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+    if not TOKEN:
+
+        raise RuntimeError("Set TELEGRAM_BOT_TOKEN before starting the bot.")
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CallbackQueryHandler(button))
