@@ -1,54 +1,45 @@
+from __future__ import annotations
+
 import logging
+import os
+
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, filters
 
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# Replace with bot's token
-TOKEN = 'TOKEN'
+async def get_chat_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message:
+        await update.message.reply_text(f"Chat ID: {update.message.chat_id}")
 
-GROUP_CHAT_ID = -'.......'  
-FILE_MESSAGE_IDS = [39, 47]  
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message.chat.type == 'private':
-        if not GROUP_CHAT_ID or not FILE_MESSAGE_IDS:
-            await update.message.reply_text('Bot setup incomplete. Contact the admin.')
-            return
-        for msg_id in FILE_MESSAGE_IDS:
-            try:
-                await context.bot.forward_message(
-                    chat_id=update.message.chat_id,
-                    from_chat_id=GROUP_CHAT_ID,
-                    message_id=msg_id
-                )
-            except Exception as e:
-                logging.error(f'Error forwarding message {msg_id}: {e}')
-        await update.message.reply_text('Files forwarded successfully!')
-    else:
-        await update.message.reply_text('Please use /start in a private chat with me.')
-
-async def getchatid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'This chat ID is: {update.message.chat_id}')
-
-async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def get_message_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message:
+        return
     if update.message.reply_to_message:
-        replied_msg_id = update.message.reply_to_message.message_id
-        await update.message.reply_text(f'The replied message ID is: {replied_msg_id}')
+        await update.message.reply_text(
+            f"Message ID: {update.message.reply_to_message.message_id}"
+        )
     else:
-        await update.message.reply_text('Reply to a message with /getid to get its ID.')
+        await update.message.reply_text("Reply to a message with /getid.")
+
 
 def main() -> None:
-    application = Application.builder().token(TOKEN).build()
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not token:
+        raise RuntimeError("Set TELEGRAM_BOT_TOKEN before starting the helper bot.")
 
-    
-    application.add_handler(CommandHandler('start', start, filters.ChatType.PRIVATE))
-    
-    application.add_handler(CommandHandler('getchatid', getchatid))
-    application.add_handler(CommandHandler('getid', getid))
-
+    application = Application.builder().token(token).build()
+    application.add_handler(CommandHandler("getchatid", get_chat_id))
+    application.add_handler(
+        CommandHandler("getid", get_message_id, filters=filters.REPLY)
+    )
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
